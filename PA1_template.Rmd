@@ -94,3 +94,4 @@ plot(mean_sub_wday~levels(factor(sub_wday$interval)), type="l", main="Activity i
 plot(mean_sub_wend~levels(factor(sub_wend$interval)), type="l", main="Activity in the weekends", xlab="Time interval")
 ```
 
+That is the end.

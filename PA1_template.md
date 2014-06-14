@@ -309,3 +309,4 @@ plot(mean_sub_wend~levels(factor(sub_wend$interval)), type="l", main="Activity i
 
 ![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
 
+That is the end.
