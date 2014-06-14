@@ -1,20 +1,96 @@
 # Reproducible Research: Peer Assessment 1
 
 
+================================================
+
+
 ## Loading and preprocessing the data
 
+
+We assume that the activity.csv file has already been unzipped in the workdirectory.Lets check what is the number of rows with completed obseravtions.
+
+```{r, results="asis"}
+setwd("C:/Users/x/RepData_PeerAssessment1")
+act<-read.csv("activity.csv")
+head(act)
+dim (act)
+cc<-complete.cases(act)
+sum(cc) #This is the number of complete observations
+act1<-act[cc,] #This is a subset with completed observations only
+dim (act1)
+```
 
 
 ## What is mean total number of steps taken per day?
 
-
+```{r, results="asis"}
+days<-as.Date(act1$date)
+total_steps<-tapply(act1$steps,days,sum, na.rm=TRUE)
+length(total_steps)
+hist(total_steps, main="Histogram total number of steps per day")
+mean_steps<-tapply(act1$steps, days, mean, na.rm=TRUE) #This is the mean number of steps per day
+mean_steps
+plot(mean_steps)
+median_steps<-tapply(act1$steps, days, median, na.rm=TRUE) #This is the median number of steps per day
+median_steps
+plot(median_steps)
+```
 
 ## What is the average daily activity pattern?
 
-
+```{r, results="asis"}
+mean_steps_int<-tapply(act1$steps,act1$interval,mean,na.rm=TRUE)
+length(mean_steps_int)
+plot(mean_steps_int~levels(factor(act1$interval)), type="l")
+grep(max(mean_steps_int), mean_steps_int)
+levels(factor(act1$interval))[[104]]#This is the time interval with maximal activity
+```
 
 ## Imputing missing values
+
+```{r, results="asis"}
+means_int<-tapply(act$steps, act$interval, mean, na.rm=TRUE)
+length(means_int)
+ndays<-nrow(act)/length(means_int)
+seq<-rep(means_int, times=ndays)
+act_imput<-cbind(act,seq)
+fac<-is.na(act$steps)
+sub1<-act_imput[fac,]
+sub2<-act_imput[!fac,]
+sub1[,1]<-sub1[,4]
+act_final<-rbind(sub1,sub2)
+table(is.na(act_final))
+act_final<-act_final[,1:3]
+days1<-as.Date(act_final$date)
+head(act_final)
+length(table(days1))## Obviously we have 8 more days with complete data.
+mean_steps_final<-tapply(act_final$steps, days1, mean)
+mean_steps_final #Means did not change because measurements for entire day were excluded
+plot(mean_steps_final)
+median_steps_final<-tapply(act_final$steps, days1, median)
+median_steps_final #Medians for the days with missing values differed from 0 because the substitution was made with means
+plot(median_steps_final)
+```
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r, results="asis"}
+days2<-as.POSIXlt(days1)
+class(days2)
+days3<-days2$wday
+fdays<-factor(days3)
+act_final$fdays<-fdays
+colnames(act_final)
+sub_wend<-subset(act_final, subset=(act_final$fdays%in%c(0,6)))
+sub_wday<-subset(act_final, subset=(act_final$fdays%in%c(1:5)))
+dim(sub_wend)
+dim(sub_wday)
+mean_sub_wday<-tapply(sub_wday$steps,sub_wday$interval,mean)
+mean_sub_wend<-tapply(sub_wend$steps,sub_wend$interval,mean)
+par(mfrow=c(2,1))
+plot(mean_sub_wday~levels(factor(sub_wday$interval)), type="l", main="Activity in the weekdays", xlab="Time interval")
+plot(mean_sub_wend~levels(factor(sub_wend$interval)), type="l", main="Activity in the weekends", xlab="Time interval")
+```
+
